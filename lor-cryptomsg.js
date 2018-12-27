@@ -12,6 +12,7 @@
 
 (function() {
 
+    var username = '';
 
     var publicKey = `-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlOJu6TyygqxfWT7eLtGDwajtN
@@ -55,8 +56,9 @@ uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876
     var decryptFn = function(messageTag) {
 
         var msg = messageTag.querySelectorAll('p');
+        var author = $(messageTag).find('.sign a[itemprop="creator"]').text();
 
-        if (msg && msg.length)  {
+        if (msg && msg.length && author.trim() != '')  {
 
             Array.prototype.forEach.call(msg, function(p) {
                 var msg = p.innerText;
@@ -107,10 +109,46 @@ uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876
     }
 
 
+    var checkLoggedIn = function(callback) {
+        var regmenu = $('#regmenu');
+        if (regmenu && regmenu.length) {
+            username = '';
+            return;
+        }
+        var login = $('#loginGreating a').text();
+        if (login.trim() != '' && login.trim() != 'РегистрацияВход') {
+            username = login.trim();
+            callback();
+        }
+    }
+
+    var reloadUsersWithPublicKeys = function() {
+        $.get('http://127.0.0.1:8080/people/'+username+'/profile', function(data) {
+            var regexpKeyset = /\[USERKEYS\]([\s\S]+)\[\/USERKEYS\]/gi;
+            var regexpKey = /\[USERKEY user="(\w)"\]([\s\S]+)\[\/USERKEY\]/gi;
+
+            if (regexpKeyset.test(data)) {
+                var resultKeyset = data.match(regexpKeyset);
+                if (resultKeyset.length > 1) {
+                    var keyset = resultKeyset[1];
+                    if (regexpKey.test(keyset)) {
+                        var resultKeys = keyset.match(regexpKey);
+                        if (resultKeys.length > 1) {
+                            for (var i=1; i < resultKeys.length; i++) {
+                                var keyData = resultKey[i];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     window.addEventListener('load', function() {
 
-        //loadProto(function() {
-            console.log("JSEncrypt has been loaded");
+        checkLoggedIn(function() {
+
+            reloadUsersWithPublicKeys();
 
             //autodecrypt
             var messages = $('.msg_body');
@@ -124,8 +162,7 @@ uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876
                 Array.prototype.forEach.call(textareas, insertEncryptButton);
             }
 
-        //});
-
+        });
 
     });
 
