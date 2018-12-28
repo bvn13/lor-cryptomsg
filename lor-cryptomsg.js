@@ -86,35 +86,32 @@ uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876
         var author = $(messageTag).find('.sign a[itemprop="creator"]').text();
 
         if (msg && msg.length && author.trim() != '')  {
-            var encryptedRegexp = /(\[ENCRYPTED\][\s\S]+\[\/ENCRYPTED\])+?/mi;
-            var encryptedMsgRegexp = /\[ENCRYPTED\]([\s\S]+)\[\/ENCRYPTED\]/mi;
+            var encryptedRegexp = /\[ENCRYPTED\]([\s\S]+)\[\/ENCRYPTED\]/mi;
+            var encryptedRegexpMy = /\[ENCORIGIN\]([\s\S]+)\[\/ENCORIGIN\]/mi;
+            var regexp;
 
             Array.prototype.forEach.call(msg, function(p) {
                 var msg = p.innerText;
-                if (msg.trim() != '' && encryptedRegexp.test(msg)) {
-
-                    var result = msg.match(encryptedRegexp);
-                    if (result && result.length >= 1) {
-
-                        for (var i=1; i<result.length; i++) {
-                            var encBlock = result[i];
-
-                            if (encBlock && encryptedMsgRegexp.test(encBlock)) {
-                                var resultMsg = encBlock.match(encryptedMsgRegexp);
-
-                                if (resultMsg && resultMsg.length) {
-                                    var decrypt = new JSEncrypt.JSEncrypt();
-                                    decrypt.setPrivateKey(privateKey);
-
-                                    var decryptedMsg = decrypt.decrypt(resultMsg[1]);
-                                    msg = msg.replace(encBlock, '[DECRYPTED]'+decryptedMsg+'[/DECRYTED]');
-                                }
-
+                for (var i=0; i<2; i++) {
+                    if (i == 0) {
+                        regexp = encryptedRegexp;
+                    } else {
+                        regexp = encryptedRegexpMy;
+                    }
+                    if (msg.trim() != '' && regexp.test(msg)) {
+                        var result = msg.match(regexp);
+                        if (result && result.length >= 1) {
+                            var encMsg = result[1];
+                            var decrypt = new JSEncrypt.JSEncrypt();
+                            decrypt.setPrivateKey(privateKey);
+                            var decryptedMsg = decrypt.decrypt(encMsg);
+                            if (i == 0) {
+                                msg = msg.replace(encBlock, '[DECRYPTED]'+decryptedMsg+'[/DECRYTED]');
+                            } else {
+                                msg = msg.replace(encBlock, '[ORIGIN]'+decryptedMsg+'[/ORIGIN]');
                             }
                         }
-
                     }
-
                 }
                 p.innerText = msg;
             });
@@ -157,7 +154,7 @@ uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876
 
                 var encryptedMsg = encrypt.encrypt(msg);
                 var encryptedMsgMy = encryptMy.encrypt(msg);
-                insertText(textarea, '[ENCRYPTED]' + encryptedMsg + '[/ENCRYPTED]' + '[ENCRYPTED]' + encryptedMsgMy + '[/ENCRYPTED]');
+                insertText(textarea, '[ENCRYPTED]' + encryptedMsg + '[/ENCRYPTED]' + '[ENCORIGIN]' + encryptedMsgMy + '[/ENCORIGIN]');
 
             });
 
