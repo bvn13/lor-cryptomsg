@@ -27,19 +27,19 @@ gwQco1KRMDSmXSMkDwIDAQAB
 
 
     var privateKey = `-----BEGIN RSA PRIVATE KEY-----
-MIICXQIBAAKBgQDlOJu6TyygqxfWT7eLtGDwajtNFOb9I5XRb6khyfD1Yt3YiCgQ
-WMNW649887VGJiGr/L5i2osbl8C9+WJTeucF+S76xFxdU6jE0NQ+Z+zEdhUTooNR
-aY5nZiu5PgDB0ED/ZKBUSLKL7eibMxZtMlUDHjm4gwQco1KRMDSmXSMkDwIDAQAB
-AoGAfY9LpnuWK5Bs50UVep5c93SJdUi82u7yMx4iHFMc/Z2hfenfYEzu+57fI4fv
-xTQ//5DbzRR/XKb8ulNv6+CHyPF31xk7YOBfkGI8qjLoq06V+FyBfDSwL8KbLyeH
-m7KUZnLNQbk8yGLzB3iYKkRHlmUanQGaNMIJziWOkN+N9dECQQD0ONYRNZeuM8zd
-8XJTSdcIX4a3gy3GGCJxOzv16XHxD03GW6UNLmfPwenKu+cdrQeaqEixrCejXdAF
-z/7+BSMpAkEA8EaSOeP5Xr3ZrbiKzi6TGMwHMvC7HdJxaBJbVRfApFrE0/mPwmP5
-rN7QwjrMY+0+AbXcm8mRQyQ1+IGEembsdwJBAN6az8Rv7QnD/YBvi52POIlRSSIM
-V7SwWvSK4WSMnGb1ZBbhgdg57DXaspcwHsFV7hByQ5BvMtIduHcT14ECfcECQATe
-aTgjFnqE/lQ22Rk0eGaYO80cc643BXVGafNfd9fcvwBMnk0iGX0XRsOozVt5Azil
-psLBYuApa66NcVHJpCECQQDTjI2AQhFc1yRnCU/YgDnSpJVm1nASoRUnU8Jfm3Oz
-uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876
+MIICWwIBAAKBgQDHRD82iMTlM0BQf0Rq5Al6KRX8x4niisa/LBeGONDNY6F2whCb
+N1X4hvQZMxLfqi3COu0WiprgVNkSE0VISoAe3a2Tu5+knJJjOmFXchy735Fu4MUY
+UX4D8LxXI0xbiEeNyB9fqcQ03cwqAusttxvExgO8C92iJ3a7BytbHlDeqwIDAQAB
+AoGAdcMshIMhsb6vNKNyAKXRwANF/kTChUK0oEhjgqxTIf7ObovUGpcCVMUUv0vC
+zLIbJt2CPj8dtpQOUTNYT5fPzOLmi1i1V5U1yR+o8R7vh4yFdQUN6m4rSU47fjOV
+QeFRkPxtffAxt+o+RxIMhuZ6GOI1tAqlGXcC/qIhMjijvBkCQQDpOMX86KOwzn3e
+KgzU2cylkT8deNtlaBDloX059kfAB/9mUM2tXc78pPNcdqBkzCJ2Pq6s0586ZDfJ
+Z9gr2YU3AkEA2rp+ocQ25g8Bm2rcmnfGmLDuyvcpUuvUTFtrHoqOH7K6YgCGHfP7
+xIuPTBjKPje2DzBszmlXoOfh6uzyAsksLQJAHdT8Rlh/r7sKEKPyVjux2K/Wke+G
+qNcB6k2Y1hQxo1eijLTjSjzIoDp9QqON6rbN5bAo6cR8Bp0RIbsdxKYjSwJAZAVe
+PPkuJZv9HyYJxTU6gr5+JCBMLFgdV+GCJZA0l7gyVPhqXC4jFmi/WYwIh9UQEvgQ
++X7gjHsdK0G5FZ8K7QJAc17hFMU6eQKJcufH7zDTzCJ6I45dS6oKywxVh/v6t1P5
+d8W1OZtjDjoVj0X2shvBtc/kVDGI176rothpYJU0WA==
 -----END RSA PRIVATE KEY-----`;
 
     var getAllowedUsers = function() {
@@ -86,33 +86,24 @@ uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876
         var author = $(messageTag).find('.sign a[itemprop="creator"]').text();
 
         if (msg && msg.length && author.trim() != '')  {
-            var encryptedRegexp = /\[ENCRYPTED\]([\s\S]+)\[\/ENCRYPTED\]/mi;
-            var encryptedRegexpMy = /\[ENCORIGIN\]([\s\S]+)\[\/ENCORIGIN\]/mi;
+            var encryptedRegexp = /(\[ENCRYPTED\](.+?)\[\/ENCRYPTED\])/mig;
             var regexp;
 
             Array.prototype.forEach.call(msg, function(p) {
                 var msg = p.innerText;
-                for (var i=0; i<2; i++) {
-                    if (i == 0) {
-                        regexp = encryptedRegexp;
-                    } else {
-                        regexp = encryptedRegexpMy;
+
+                for (var res = encryptedRegexp.exec(msg); res; res = encryptedRegexp.exec(msg)) {
+
+                    var encMsg = res[2];
+                    var decrypt = new JSEncrypt.JSEncrypt();
+                    decrypt.setPrivateKey(privateKey);
+                    var decryptedMsg = decrypt.decrypt(encMsg);
+                    if (decryptedMsg) {
+                        msg = msg.replace(res[1], '[DECRYPTED]'+decryptedMsg+'[/DECRYTED]');
                     }
-                    if (msg.trim() != '' && regexp.test(msg)) {
-                        var result = msg.match(regexp);
-                        if (result && result.length >= 1) {
-                            var encMsg = result[1];
-                            var decrypt = new JSEncrypt.JSEncrypt();
-                            decrypt.setPrivateKey(privateKey);
-                            var decryptedMsg = decrypt.decrypt(encMsg);
-                            if (i == 0) {
-                                msg = msg.replace(encBlock, '[DECRYPTED]'+decryptedMsg+'[/DECRYTED]');
-                            } else {
-                                msg = msg.replace(encBlock, '[ORIGIN]'+decryptedMsg+'[/ORIGIN]');
-                            }
-                        }
-                    }
+
                 }
+
                 p.innerText = msg;
             });
         }
@@ -154,7 +145,7 @@ uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876
 
                 var encryptedMsg = encrypt.encrypt(msg);
                 var encryptedMsgMy = encryptMy.encrypt(msg);
-                insertText(textarea, '[ENCRYPTED]' + encryptedMsg + '[/ENCRYPTED]' + '[ENCORIGIN]' + encryptedMsgMy + '[/ENCORIGIN]');
+                insertText(textarea, '[ENCRYPTED]' + encryptedMsg + '[/ENCRYPTED]' + '[ENCRYPTED]' + encryptedMsgMy + '[/ENCRYPTED]');
 
             });
 
