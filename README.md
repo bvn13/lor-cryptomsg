@@ -2,6 +2,8 @@
 
 **Description**: Crypto-Messages for [Linux.Org.Ru](https://linux.org.ru)
 
+Use this [link](http://travistidwell.com/jsencrypt/demo/index.html) to generate RS key pair.
+
 1) Set up your private RSA key into script after it have been installed in TemperMonkey.
 
 2) Set up your public RSA key into your profile description field on LOR like:
