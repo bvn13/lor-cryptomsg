@@ -191,7 +191,7 @@ d8W1OZtjDjoVj0X2shvBtc/kVDGI176rothpYJU0WA==
     var readMyKeyset = function(callback) {
         _keyset = [];
 
-        $.get('http://127.0.0.1:8080/people/'+_username+'/profile', function(data) {
+        $.get('https://linux.org.ru/people/'+_username+'/profile', function(data) {
             var regexpKeysetMy = /\[PUBLICKEY\]([\s\S]+)\[\/PUBLICKEY\]/mi;
             var regexpKeyset = /\[USERKEYS\]([\s\S]+)\[\/USERKEYS\]/mgi;
             var regexpKey = /\[USERKEY user=(\w+)\]([\s\S]+)\[\/USERKEY\]/mi;
